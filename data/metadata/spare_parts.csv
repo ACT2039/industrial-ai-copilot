@@ -1,0 +1,40 @@
+Part_ID,Part_Name,Manufacturer,Stock_Quantity,Reorder_Level,Location,Cost,Primary_Equipment
+BRG-992-SKF,Spindle Bearing High Speed,SKF,12,5,Warehouse_A,450.00,CNC-601
+SEAL-101-ABB,Mechanical Pump Seal,ABB,20,10,Warehouse_B,75.50,P-101
+WIND-501,Stator Winding Kit,Schneider,2,1,Warehouse_A,1200.00,M-501
+SEAL-201,Compressor Oil Seal,Atlas Copco,15,5,Warehouse_B,45.00,C-201
+LUB-001,ATC Arm Lubricant,Kluber,50,20,Flammable_Locker,120.00,CNC-602
+IMP-103,Centrifugal Impeller,Grundfos,5,2,Warehouse_B,320.00,P-103
+CPL-502,Motor Coupling Insert,Lovejoy,30,10,Warehouse_B,25.00,M-502
+SEAT-401,Valve Seat Ring,Fisher,10,5,Warehouse_B,180.00,V-401
+SRV-701,Servo Motor Axis 3,FANUC,3,1,Warehouse_A,2500.00,RBT-701
+NOZ-301,Burner Nozzle Assembly,Cleaver-Brooks,8,4,Warehouse_B,400.00,B-301
+PMP-101,Coolant Pump Assembly,ABB,1,1,Warehouse_B,850.00,P-101
+VAL-202,Thermal Mixing Valve,Atlas Copco,4,2,Warehouse_B,210.00,C-202
+LUB-002,High Temp Bearing Grease,Mobil,25,10,Flammable_Locker,85.00,M-504
+PCK-403,PTFE Valve Packing,Emerson,40,20,Warehouse_B,15.00,V-403
+CBL-702,Teach Pendant Comm Cable,FANUC,6,2,Warehouse_A,150.00,RBT-702
+SCN-302,Optical Flame Scanner,Fireye,2,1,Warehouse_A,950.00,B-302
+BS-603,X-Axis Ballscrew,NSK,1,1,Warehouse_A,3400.00,CNC-603
+FLT-203,Intake Air Filter Element,Mann,100,50,Warehouse_B,35.00,C-203
+PMP-103,Hydraulic Gear Pump,Rexroth,2,1,Warehouse_B,1100.00,P-103
+ACT-405,Pneumatic Actuator Spring Return,Fisher,3,1,Warehouse_B,650.00,V-405
+SOL-703,Pneumatic Solenoid Valve,Festo,15,5,Warehouse_B,95.00,RBT-703
+SGT-303,Sight Glass Tube,Jerguson,10,5,Warehouse_B,45.00,B-303
+CMP-605,Chiller Compressor Unit,Copeland,1,1,Warehouse_A,2200.00,CNC-605
+SEAL-104,Cartridge Mechanical Seal,Flowserve,5,2,Warehouse_B,890.00,P-104
+VAL-204,Unloader Valve Repair Kit,Atlas Copco,8,4,Warehouse_B,320.00,C-204
+SRV-304,Safety Relief Valve,Consolidated,4,2,Warehouse_B,540.00,B-304
+SW-601,Limit Switch Roller Lever,Omron,50,20,Warehouse_A,25.00,CNC-601
+RLY-105,Thermal Overload Relay,Schneider,12,6,Warehouse_A,85.00,P-105
+FLT-205,Compressor Oil Filter,Atlas Copco,30,15,Warehouse_B,42.00,C-205
+CUP-705,Vacuum Suction Cup,Piab,100,50,Warehouse_B,12.00,RBT-705
+SEAT-305,Blowdown Valve Seat,Yarway,6,3,Warehouse_B,280.00,B-305
+COV-602,Z-Axis Way Cover,Hennig,2,1,Warehouse_A,1500.00,CNC-602
+INS-101,Jaw Coupling Spider,Lovejoy,40,20,Warehouse_B,18.00,P-101
+BRG-503,Motor Shielded Bearing,SKF,20,10,Warehouse_B,65.00,M-503
+TIP-701,Copper Welding Contact Tip,Tweco,500,200,Warehouse_B,2.50,RBT-701
+PMP-301,Boiler Feedwater Pump,Grundfos,1,1,Warehouse_A,3200.00,B-301
+HMI-603,Touchscreen Display Panel,Haas,2,1,Warehouse_A,1800.00,CNC-603
+DES-202,Activated Alumina Desiccant,Atlas Copco,10,5,Warehouse_B,140.00,C-202
+SPR-405,Actuator Return Spring,Fisher,5,2,Warehouse_B,110.00,V-405

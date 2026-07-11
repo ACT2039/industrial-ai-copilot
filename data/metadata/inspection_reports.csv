@@ -1,0 +1,21 @@
+Inspection_ID,Equipment_ID,Date,Inspector,Inspection_Type,Result,Notes
+IR-2026-001,CNC-601,2026-05-10,Q. Analyst,Geometric Accuracy,Pass,Spindle runout within 0.005mm tolerance.
+IR-2026-002,P-101,2026-05-12,M. Tech,Vibration Analysis,Warning,Slight imbalance detected on motor coupling end.
+IR-2026-003,C-201,2026-05-15,E. Inspector,Thermography,Pass,No hot spots on compressor motor or electrical panel.
+IR-2026-004,M-501,2026-05-18,E. Inspector,Electrical Insulation,Pass,Megger readings > 100 MOhm.
+IR-2026-005,RBT-701,2026-05-20,Q. Analyst,TCP Calibration,Pass,Tool Center Point within 0.1mm.
+IR-2026-006,V-401,2026-05-22,M. Tech,Leak Testing,Pass,Zero leakage at full system pressure.
+IR-2026-007,B-301,2026-05-25,Third Party,NDT - Ultrasonic,Pass,Boiler shell thickness nominal. No thinning detected.
+IR-2026-008,CNC-602,2026-05-28,Q. Analyst,Laser Interferometer,Warning,X-axis backlash approaching upper limit.
+IR-2026-009,P-103,2026-06-02,M. Tech,Vibration Analysis,Pass,Overall vibration < 2.5 mm/s RMS.
+IR-2026-010,C-202,2026-06-05,E. Inspector,Thermography,Warning,Elevated temp on unloader valve body.
+IR-2026-011,M-504,2026-06-08,E. Inspector,Electrical Insulation,Pass,Windings healthy.
+IR-2026-012,CNC-603,2026-06-10,Q. Analyst,Spindle Drawbar,Pass,Drawbar force 12kN.
+IR-2026-013,P-102,2026-06-15,M. Tech,Oil Analysis,Warning,Particle count high. Schedule oil change.
+IR-2026-014,C-203,2026-06-18,M. Tech,Vibration Analysis,Pass,Normal spectrum.
+IR-2026-015,RBT-702,2026-06-20,Q. Analyst,TCP Calibration,Pass,Calibration successful.
+IR-2026-016,V-403,2026-06-22,M. Tech,Stroke Test,Pass,Valve strokes smoothly 0-100%.
+IR-2026-017,B-302,2026-06-25,Third Party,NDT - Dye Penetrant,Pass,No surface cracks on weld seams.
+IR-2026-018,CNC-604,2026-06-28,Q. Analyst,Geometric Accuracy,Pass,Turret alignment within spec.
+IR-2026-019,P-104,2026-07-02,M. Tech,Vibration Analysis,Pass,No bearing defect frequencies present.
+IR-2026-020,M-502,2026-07-05,E. Inspector,Thermography,Pass,Normal temperatures.

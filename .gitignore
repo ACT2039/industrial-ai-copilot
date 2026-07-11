@@ -97,3 +97,5 @@ data/knowledge_graph/*
 *.h5
 *.onnx
 models/
+data/raw/*
+!data/raw/.gitkeep

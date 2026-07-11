@@ -1,0 +1,12 @@
+Document_Name,Document_Type,Department,Equipment,Revision,Version,Source,Owner
+ENG-MAN-CNC601-SIEMENS-001.pdf,OEM_Manual,Engineering,CNC-601,RevC,1.2,Public_Siemens,eng@nexus.com
+ENG-MAN-CNC602-SIEMENS-001.pdf,OEM_Manual,Engineering,CNC-602,RevA,1.0,Public_Siemens,eng@nexus.com
+ENG-MAN-P101-ABB-001.pdf,OEM_Manual,Engineering,P-101,RevB,2.0,Public_ABB,eng@nexus.com
+ENG-MAN-M504-ABB-001.pdf,OEM_Manual,Engineering,M-504,RevA,1.0,Public_ABB,eng@nexus.com
+ENG-MAN-M501-SCHNEIDER-001.pdf,OEM_Manual,Engineering,M-501,RevD,3.1,Public_Schneider,eng@nexus.com
+ENG-MAN-M502-SCHNEIDER-001.pdf,OEM_Manual,Engineering,M-502,RevB,2.0,Public_Schneider,eng@nexus.com
+ENG-MAN-C201-ATLAS-001.pdf,OEM_Manual,Engineering,C-201,RevA,1.0,Public_Atlas,eng@nexus.com
+ENG-MAN-C202-ATLAS-001.pdf,OEM_Manual,Engineering,C-202,RevA,1.0,Public_Atlas,eng@nexus.com
+MNT-MAN-HVAC-001.pdf,Maintenance_Manual,Maintenance,HVAC_System,RevA,1.0,Internal,maintenance@nexus.com
+EHS-SOP-LOTO-001.pdf,Safety_SOP,Safety,All,RevB,1.1,Internal,safety@nexus.com
+EHS-SOP-CONFINED-002.pdf,Safety_SOP,Safety,All,RevA,1.0,Internal,safety@nexus.com
