@@ -1,0 +1,9 @@
+{
+    "Model": "gemini-3.5-flash",
+    "Embedding_Model": "sentence-transformers/all-MiniLM-L6-v2",
+    "Knowledge_Vectors": 46003,
+    "Knowledge_Chunks": 46003,
+    "Demo_Questions": 8,
+    "Successful_Queries": 8,
+    "Fallback_Queries": 0
+}
