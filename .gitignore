@@ -99,3 +99,17 @@ data/knowledge_graph/*
 models/
 data/raw/*
 !data/raw/.gitkeep
+
+# Notebook Outputs
+data/inventory/*
+!data/inventory/.gitkeep
+
+data/ocr/*
+!data/ocr/.gitkeep
+
+data/rag/*
+!data/rag/.gitkeep
+
+# Python bytecode
+*.pyo
+*.pyd
