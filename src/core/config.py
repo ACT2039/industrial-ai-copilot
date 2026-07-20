@@ -18,6 +18,8 @@ VECTOR_DB_DIR = DATA_DIR / "vector_db"
 KG_DIR = DATA_DIR / "knowledge_graph"
 INVENTORY_DIR = DATA_DIR / "inventory"
 LOG_DIR = PROJECT_ROOT / "logs"
+OCR_DIR = DATA_DIR / "ocr"
+OCR_DIR.mkdir(parents=True, exist_ok=True)
 
 # Ensure essential directories exist
 for d in [
