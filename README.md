@@ -1,61 +1,309 @@
-# Enterprise Industrial AI Copilot (Nexus Industrial Corp)
+# 🚀 NEXUS AI – Enterprise GraphRAG Investigation Copilot
 
-## Overview
-Industrial AI Copilot is an enterprise-grade AI platform designed to transform fragmented industrial documents into a unified, searchable, and intelligent knowledge system. 
-This repository contains the full architecture for implementing a Retrieval-Augmented Generation (RAG) and Enterprise Knowledge Graph (EKG) platform.
+> An enterprise-grade AI investigation workspace that combines **Retrieval-Augmented Generation (RAG)**, **Knowledge Graph reasoning**, and **Explainable AI** to provide grounded, evidence-backed answers for industrial engineering documentation.
 
-## Repository Philosophy
-This project strictly follows open-source and enterprise AI software engineering best practices. We separate **Code** from **Data**. To prevent repository bloat and ensure fast cloning, heavy binary datasets (large PDFs, OCR images) are intentionally `.gitignore`d. Instead, we rely on lightweight synthetic CSVs for architecture validation and provide a small sample dataset for immediate testing.
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-Web_App-red)
+![FAISS](https://img.shields.io/badge/FAISS-Vector_Search-green)
+![NetworkX](https://img.shields.io/badge/Knowledge_Graph-NetworkX-orange)
+![OpenRouter](https://img.shields.io/badge/LLM-OpenRouter-purple)
+![License](https://img.shields.io/badge/License-MIT-brightgreen)
 
-## Repository Structure
+---
 
-```text
-.
-├── backend/            # FastAPI backend services (RAG, Graph, OCR APIs)
-├── config/             # Environment variables and logging configurations
-├── data/               # Core Enterprise Data Lake
-│   ├── archive/        # Archived documents and unutilized images
-│   ├── metadata/       # Tracked: Enterprise Master Tables (Equipment, Documents, Work Orders)
-│   ├── raw/            # Ignored: Immutable source documents (Manuals, Maintenance, Safety)
-│   └── ...             # Ignored: chunks/, embeddings/, vector_db/, processed/
-├── docs/               # Enterprise architecture and dataset documentation
-├── frontend/           # React Dashboard (Future implementation)
-├── logs/               # Application logs
-├── notebooks/          # Data exploration and RAG evaluation
-├── samples/            # Tracked: Lightweight 10-file sample dataset for demo purposes
-├── scripts/            # Standalone python scripts for ETL and data ingestion
-└── tests/              # Pytest suite
+## 📌 Project Overview
+
+NEXUS AI is an **Enterprise GraphRAG Copilot** designed for industrial environments where AI responses must be **accurate, explainable, and traceable**.
+
+Unlike traditional chatbots, NEXUS AI combines:
+
+- 📚 Semantic Vector Search (FAISS)
+- 🕸️ Knowledge Graph Reasoning
+- 🤖 Large Language Models (OpenRouter)
+- 📄 Evidence-backed Responses
+- 📊 Live Analytics
+- 🔍 Explainability
+- 💾 Investigation Memory
+
+The result is an AI assistant capable of answering engineering questions using retrieved enterprise documentation instead of relying solely on model memory.
+
+---
+
+# ✨ Key Features
+
+## 🤖 Enterprise AI Copilot
+
+- Intelligent engineering assistant
+- Context-aware conversations
+- Investigation memory
+- Follow-up question generation
+
+---
+
+## 🔎 GraphRAG Pipeline
+
+- Semantic retrieval using FAISS
+- Knowledge Graph expansion
+- Context enrichment
+- Grounded LLM generation
+
+---
+
+## 🕸️ Knowledge Graph
+
+- Entity extraction
+- Relationship mapping
+- Graph traversal
+- Connected reasoning
+
+---
+
+## 📄 Evidence Explorer
+
+Every answer includes:
+
+- Source documents
+- Similarity scores
+- Page references
+- Supporting document chunks
+
+---
+
+## 🧠 Explainability
+
+The system explains:
+
+- Why documents were selected
+- How answers were generated
+- Graph reasoning path
+- Confidence estimation
+
+---
+
+## 📊 Analytics Dashboard
+
+Live pipeline metrics including:
+
+- Pipeline latency
+- Retrieval time
+- Graph expansion time
+- LLM latency
+- Token usage
+- Retrieved chunks
+- Graph statistics
+
+---
+
+## 💾 Investigation History
+
+- Persistent investigations
+- Conversation restoration
+- Stored telemetry
+- Historical analysis
+
+---
+
+# 🏗️ System Architecture
+
+```
+                User
+                  │
+                  ▼
+        Streamlit Enterprise UI
+                  │
+                  ▼
+         Query Processing Layer
+                  │
+                  ▼
+       FAISS Vector Retrieval
+                  │
+                  ▼
+     Knowledge Graph Expansion
+                  │
+                  ▼
+        Context Construction
+                  │
+                  ▼
+          OpenRouter LLM
+                  │
+                  ▼
+      Structured AI Response
+                  │
+      ┌───────────┼───────────┐
+      ▼           ▼           ▼
+  Evidence    Explainability  Analytics
 ```
 
-## Dataset Strategy
+---
 
-### The Enterprise Dataset (Tracked)
-All structural data is tracked in Git. You will find the complete synthetic enterprise environment inside `data/metadata/`:
-- `equipment_master.csv`
-- `metadata.csv`
-- `work_orders.csv`
-- `maintenance_logs.csv`
-- `spare_parts.csv`
+# ⚙️ Technology Stack
 
-### The Sample Dataset (Tracked)
-Located in `samples/`, this folder contains a representative subset of PDFs and Images (Siemens manual, ABB manual, OSHA SOP, and a few labels). It is designed to let recruiters and judges test the document ingestion pipeline without heavy downloads.
+| Category | Technologies |
+|-----------|-------------|
+| Language | Python |
+| Frontend | Streamlit |
+| LLM | OpenRouter |
+| Embeddings | Sentence Transformers |
+| Vector Database | FAISS |
+| Knowledge Graph | NetworkX |
+| Database | SQLite |
+| Data Processing | Pandas, NumPy |
+| Visualization | Plotly |
+| NLP | spaCy |
 
-## Reproducing Results & Public Data Sources
-If you wish to run the AI Copilot on the complete, hundreds-of-megabytes dataset, you must reconstruct it locally. 
-- Please see **[`docs/dataset_sources.md`](docs/dataset_sources.md)** for links to the public OEM manuals (Siemens, ABB, Atlas Copco).
-- Please see **[`docs/reproduce_dataset.md`](docs/reproduce_dataset.md)** for exact instructions on where to place the downloaded files and how to name them.
+---
 
-## Setup & Installation
-1. Copy `config/.env.template` to `config/.env` and insert your API keys.
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. (Optional) Reconstruct the complete `data/raw/` dataset via our documentation.
-4. Execute `Notebook 1` in `notebooks/` to begin document discovery and pipeline ingestion.
+# 📂 Project Structure
 
-## MVP Scope (Phase 1)
-The current MVP focuses on the **Maintenance Copilot**. The pipeline will ingest OEM Manuals and Synthetic Work Orders to provide troubleshooting and maintenance insights for Nexus Industrial Corp assets.
+```
+NEXUS-AI/
+│
+├── app.py
+├── components/
+├── services/
+├── utils/
+├── styles/
+├── data/
+│   ├── chunks/
+│   ├── vector_db/
+│   ├── knowledge_graph/
+│   └── investigations.db
+│
+├── assets/
+├── requirements.txt
+├── runtime.txt
+└── README.md
+```
 
-## License
-MIT License
+---
+
+# 🚀 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/ACT2039/industrial-ai-copilot.git
+```
+
+Move into the project
+
+```bash
+cd <YOUR_REPOSITORY>
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the application
+
+```bash
+streamlit run app.py
+```
+
+---
+
+# 💻 Demo
+
+## Live Application
+
+> **Streamlit:** *https://industrial-ai-copilot-eev59jhrmun9niwltdx88h.streamlit.app*
+
+Example:
+
+```
+https://industrial-ai-copilot-eev59jhrmun9niwltdx88h.streamlit.app/
+```
+
+---
+
+## GitHub Repository
+
+```
+https://github.com/ACT2039/industrial-ai-copilot
+```
+
+---
+
+# 📸 Screenshots
+
+Add screenshots of:
+
+- Dashboard
+- Enterprise Copilot
+- Evidence Explorer
+- Explainability
+- Knowledge Graph
+- Analytics Dashboard
+
+---
+
+# 🔄 Application Workflow
+
+```
+User Question
+      │
+      ▼
+Semantic Retrieval
+      │
+      ▼
+Knowledge Graph Expansion
+      │
+      ▼
+Context Builder
+      │
+      ▼
+OpenRouter LLM
+      │
+      ▼
+Grounded Response
+      │
+      ▼
+Evidence + Analytics
+```
+
+---
+
+# 🎯 Use Cases
+
+- Industrial Maintenance
+- Failure Analysis
+- SOP Retrieval
+- Equipment Troubleshooting
+- Engineering Knowledge Search
+- Manufacturing Documentation
+
+---
+
+# 🔮 Future Enhancements
+
+- Multi-user authentication
+- OCR document ingestion
+- Incremental indexing
+- Multi-modal GraphRAG
+- Enterprise RBAC
+- Cloud vector database
+- Agentic workflows
+
+---
+
+# 👨‍💻 Author
+
+**Charan Teja Arangi**
+
+B.Tech Computer Science Engineering
+
+GitHub: https://github.com/ACT2039
+
+LinkedIn: https://www.linkedin.com/in/charantej2039/
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+⭐ If you found this project useful, consider giving it a star.
