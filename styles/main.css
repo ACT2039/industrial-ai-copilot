@@ -229,8 +229,8 @@ div[data-testid="stBottomBlockContainer"] {
     background: transparent !important;
     background-color: transparent !important;
     padding-bottom: 1rem !important; 
-    position: relative;
     border-top: none !important;
+    z-index: 999 !important;
 }
 
 /* Make the chat input itself a floating capsule */
