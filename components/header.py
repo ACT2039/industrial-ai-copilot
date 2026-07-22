@@ -3,28 +3,28 @@ Header Component
 """
 import streamlit as st
 
+def clear_session():
+    """Resets core session state variables and triggers a rerun."""
+    keys_to_clear = [
+        "retrieval_results", "search_time", "llm_answer", "llm_time", 
+        "total_time", "tokens_used", "last_query", "retrieved_subgraph"
+    ]
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+            
+    st.session_state["is_processing"] = False
+
 def render_header():
     """
-    Renders the premium header with dot-separated subtitles and online status.
+    Renders the unified enterprise top header natively.
     """
-    header_html = """
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: -30px; margin-bottom: 30px;">
-        <div>
-            <h1 style="margin: 0; padding: 0; font-size: 2.8rem; font-weight: 700; display: flex; align-items: center; gap: 10px;">
-                🧠 <span style="background: linear-gradient(135deg, #f8fafc, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NEXUS AI</span>
-            </h1>
-            <p style="margin: 5px 0 15px 0; color: #94a3b8; font-size: 1.1rem; letter-spacing: 1px;">Enterprise Knowledge Intelligence Platform</p>
-            <div style="display: flex; gap: 15px; color: #64748b; font-size: 0.9rem; font-weight: 500;">
-                <span style="color: #38bdf8;">GraphRAG</span> •
-                <span>Semantic Search</span> •
-                <span>Knowledge Graph</span> •
-                <span>Enterprise AI</span>
-            </div>
-        </div>
-        <div style="display: flex; align-items: center; background: rgba(16, 185, 129, 0.1); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
-            <span class="dot-green animate-pulse"></span>
-            <span style="color: #10b981; font-weight: 500; font-size: 0.9rem; letter-spacing: 0.5px;">System Online</span>
-        </div>
-    </div>
-    """
-    st.markdown(header_html, unsafe_allow_html=True)
+    col1, col2 = st.columns([4, 1])
+    
+    with col1:
+        st.markdown("<h1 style='margin-bottom: 0; padding-bottom: 0;'>NEXUS AI Workspace</h1>", unsafe_allow_html=True)
+        
+    with col2:
+        st.button("Clear Session", use_container_width=True, on_click=clear_session)
+        
+    st.write("") # Minimal spacing before Copilot

@@ -93,6 +93,11 @@ def search(query: str, top_k: int = 5) -> list:
                 continue
                 
             meta_row = meta_df.iloc[idx]
+            
+            # Check for Soft Deleted documents
+            if meta_row.get("File_Name") == "DELETED":
+                continue
+                
             chunk_id = meta_row.get("Chunk_ID")
             
             # Find matching chunk text

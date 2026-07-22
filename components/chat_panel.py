@@ -3,119 +3,272 @@ Chat Panel Component
 """
 import streamlit as st
 import time
+import json
+import networkx as nx
 from services.retrieval_service import search
 from services.graph_service import get_subgraph
-from services.llm_service import build_context, generate_answer
+from services.llm_service import build_context, generate_answer, classify_intent, generate_smart_title
+from services.investigation_service import create_investigation, add_message
+
+def execute_pipeline(query: str):
+    """Executes the full GraphRAG pipeline with progressive loading states."""
+    if not query.strip() or st.session_state.get("is_processing", False):
+        return
+        
+    st.session_state["is_processing"] = True
+    
+    history = st.session_state.get("investigation_history", [])
+    memory_context = history[-4:] if len(history) >= 4 else history
+    
+    with st.status("Initializing Copilot...", expanded=True) as status:
+        t0 = time.time()
+        
+        # 1. Semantic Retrieval
+        status.update(label="Searching Knowledge Base...", state="running")
+        t_search_start = time.time()
+        results = search(query, top_k=5)
+        t_search_end = time.time()
+        
+        # 2. Knowledge Graph Expansion
+        status.update(label="Expanding Knowledge Graph...", state="running")
+        t_graph_start = time.time()
+        subgraph = get_subgraph(results, depth=1)
+        t_graph_end = time.time()
+        
+        # 3. Context & Prompt Building
+        status.update(label="Building Context...", state="running")
+        context = build_context(results, subgraph)
+        
+        if not results:
+            coverage = "Low"
+            coverage_reason = "No relevant chunks found in the Knowledge Base."
+        else:
+            best_score = results[0]["Score"]
+            if best_score > 1.2 or len(results) < 2:
+                coverage = "Low"
+                coverage_reason = f"Only weak matches found (Best Score: {best_score})."
+            elif best_score < 0.8:
+                coverage = "High"
+                coverage_reason = f"Strong semantic matches found (Best Score: {best_score})."
+            else:
+                coverage = "Medium"
+                coverage_reason = "Partial matches found, confidence is moderate."
+                
+        is_general_ai = st.session_state.get("general_ai_mode", False)
+        
+        if coverage == "Low" and not is_general_ai:
+            status.update(label="Confidence Gate Triggered...", state="running")
+            answer = "⚠️ **Confidence Gate Triggered**\n\nThe current knowledge base does not contain enough verified information to answer confidently.\n\n*Suggestions:*\n- Upload additional documents (e.g., Maintenance SOP, Repair Manual).\n- Enable **General AI Mode** below to allow external knowledge."
+            llm_latency, tokens, intent = 0.0, 0, "Blocked"
+        else:
+            status.update(label="Generating AI Response...", state="running")
+            answer, llm_latency, tokens, intent = generate_answer(context, query, is_general_ai, memory_context)
+            if coverage == "Medium" and not is_general_ai:
+                answer = "⚠️ *Warning: Limited supporting evidence in the knowledge base.* \n\n" + answer
+        
+        status.update(label="Finalizing Investigation...", state="complete", expanded=False)
+        t1 = time.time()
+        
+        # Determine Current Investigation ID
+        if not st.session_state.get("current_investigation_id"):
+            title = generate_smart_title(query)
+            st.session_state["current_investigation_id"] = create_investigation(title)
+            
+        inv_id = st.session_state["current_investigation_id"]
+        
+        # Save to SQLite
+        results_json = json.dumps(results) if results else "[]"
+        subgraph_json = json.dumps(nx.node_link_data(subgraph)) if subgraph else "{}"
+        metrics_json = json.dumps({
+            "search_time": round(t_search_end - t_search_start, 3),
+            "graph_time": round(t_graph_end - t_graph_start, 3),
+            "llm_time": llm_latency,
+            "tokens_used": tokens,
+            "total_time": round(t1 - t0, 2)
+        })
+        
+        add_message(inv_id, query, intent, answer, results_json, subgraph_json, metrics_json, coverage, coverage_reason)
+        
+        # Append to visual history
+        st.session_state["investigation_history"].append({
+            "query": query,
+            "intent": intent,
+            "answer": answer,
+            "results": results,
+            "subgraph": subgraph,
+            "coverage": coverage,
+            "coverage_reason": coverage_reason,
+            "general_ai_mode": is_general_ai
+        })
+        
+        # Update top-level legacy states for other panels
+        st.session_state["retrieval_results"] = results
+        st.session_state["retrieved_subgraph"] = subgraph
+        st.session_state["llm_answer"] = answer
+        st.session_state["query_intent"] = intent
+        st.session_state["coverage"] = coverage
+        st.session_state["coverage_reason"] = coverage_reason
+        
+    st.session_state["is_processing"] = False
+    
+    if "user_input" in st.session_state:
+        st.session_state["user_input"] = ""
+
+def extract_main_answer_and_extras(full_answer: str):
+    main_body = full_answer
+    followups = []
+    topics = []
+    
+    parts = full_answer.split("### Follow-up Questions")
+    if len(parts) == 2:
+        main_body = parts[0].strip()
+        rest = parts[1].split("### Explore Related Topics")
+        followups_raw = rest[0].strip()
+        followups = [line.strip("- *").strip() for line in followups_raw.split("\n") if line.strip()]
+        
+        if len(rest) == 2:
+            topics_raw = rest[1].strip()
+            topics = [line.strip("- *").strip() for line in topics_raw.split("\n") if line.strip()]
+            
+    return main_body, followups, topics
+
+def set_query(query: str):
+    st.session_state["user_input"] = query
+
+def submit_query():
+    query = st.session_state.get("user_input", "")
+    if query.strip():
+        execute_pipeline(query)
 
 def render_chat_panel():
-    """
-    Renders the enterprise AI chat panel, handling the full end-to-end GraphRAG pipeline.
-    """
-    # Initialize states
-    if "retrieval_results" not in st.session_state:
-        st.session_state["retrieval_results"] = []
-    if "search_time" not in st.session_state:
-        st.session_state["search_time"] = 0.0
-    if "llm_answer" not in st.session_state:
-        st.session_state["llm_answer"] = None
-    if "llm_time" not in st.session_state:
-        st.session_state["llm_time"] = 0.0
-    if "total_time" not in st.session_state:
-        st.session_state["total_time"] = 0.0
-    if "tokens_used" not in st.session_state:
-        st.session_state["tokens_used"] = 0
-
-    st.markdown(
-        """
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h2 style="margin: 0; color: #f8fafc; font-size: 1.5rem; font-weight: 600;">NEXUS AI</h2>
-            <span class="chip" style="font-size: 0.7rem; border-color: rgba(56,189,248,0.3); color: #38bdf8;">Enterprise Copilot</span>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-    
-    # Scrollable container for conversation/welcome
-    with st.container(height=380, border=False):
-        if not st.session_state["llm_answer"]:
-            # Display Welcome State
-            st.markdown(
-                """
-                <p style="color: #94a3b8; font-size: 1rem; margin-bottom: 25px;">Ask intelligent questions across your enterprise knowledge base.</p>
-                <div style="color: #64748b; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; margin-bottom: 10px;">Suggested Questions</div>
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #cbd5e1; font-size: 0.9rem;">
-                        • Summarize maintenance SOP
-                    </div>
-                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #cbd5e1; font-size: 0.9rem;">
-                        • Explain transformer architecture
-                    </div>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-        else:
-            # Display Generated Response State
-            st.markdown(
-                f"""
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px 12px 0 12px; padding: 15px; margin-bottom: 15px; color: #e2e8f0; text-align: right; margin-left: 20%;">
-                    {st.session_state.get('last_query', '')}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            
-            st.markdown(
-                """
-                <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px 12px 12px 0; padding: 15px; margin-bottom: 10px; color: #f1f5f9; margin-right: 10%;">
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown(st.session_state["llm_answer"])
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-            st.markdown(
-                f"""
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-                    <span style="color: #64748b; font-size: 0.75rem;">Pipeline Latency: {st.session_state['total_time']}s | LLM Tokens: {st.session_state['tokens_used']}</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-    
-    # Input Form
-    with st.form(key="search_form", clear_on_submit=True):
-        query = st.text_input("Message NEXUS...", placeholder="Ask anything about your data...", label_visibility="collapsed")
-        submit_button = st.form_submit_button("Send Query", use_container_width=True)
+    if "investigation_history" not in st.session_state:
+        st.session_state["investigation_history"] = []
+    if "current_investigation_id" not in st.session_state:
+        st.session_state["current_investigation_id"] = None
+    if "is_processing" not in st.session_state:
+        st.session_state["is_processing"] = False
+    if "general_ai_mode" not in st.session_state:
+        st.session_state["general_ai_mode"] = False
         
-        if submit_button and query.strip():
-            with st.spinner("Executing GraphRAG Pipeline..."):
-                t0 = time.time()
+    if "user_input" not in st.session_state:
+        st.session_state["user_input"] = ""
+
+    with st.container(border=True):
+        st.markdown("""
+        <div id='main-chat-container-marker' style='display:none;'></div>
+        <img src="empty.gif" onerror="
+            setTimeout(() => {
+                const marker = document.getElementById('main-chat-container-marker');
+                if (marker) {
+                    let wrapper = marker.closest('[data-testid=\\'stVerticalBlockBorderWrapper\\']');
+                    if (!wrapper) wrapper = marker.parentElement.parentElement.parentElement;
+                    if (wrapper && !wrapper.classList.contains('copilot-premium')) {
+                        wrapper.classList.add('copilot-premium');
+                    }
+                }
+            }, 50);
+        " style="display:none;">
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <div style="background: linear-gradient(135deg, #D88C51, #C0703B); color: white; border-radius: 12px; padding: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(216, 140, 81, 0.3);">
+                <span class="material-symbols-rounded" style="font-size: 24px;">psychology</span>
+            </div>
+            <div>
+                <h2 style="margin: 0; padding: 0; font-size: 1.5rem; font-weight: 700; color: #3E3228;">NEXUS AI Copilot</h2>
+                <div style="font-size: 0.85rem; color: #75553B; font-weight: 500; letter-spacing: 0.5px;">
+                    Enterprise Investigation Workspace | Grounded Answers • Conversational Memory
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        is_busy = st.session_state["is_processing"]
+        
+        if is_busy:
+            st.markdown("""
+            <style>
+            @keyframes pageBreathing {
+                0% { opacity: 1; filter: brightness(1); }
+                50% { opacity: 0.85; filter: brightness(0.85); }
+                100% { opacity: 1; filter: brightness(1); }
+            }
+            .stApp {
+                animation: pageBreathing 4s infinite ease-in-out !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+        
+        with st.container(border=False):
+            if not st.session_state["investigation_history"]:
+                st.markdown("""
+                <div style='text-align: center; margin-top: 50px; color: #75553B;'>
+                    <hr style='width: 50%; margin: 0 auto 20px auto; border-color: rgba(216, 140, 81, 0.3);'>
+                    <h3 style='color: #3E3228;'>Welcome to NEXUS AI</h3>
+                    <p style='font-size: 1.1rem;'>Start a new engineering investigation or continue a previous one.<br>Your investigations are automatically saved and organized.</p>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                # 1. Semantic Retrieval
-                t_search_start = time.time()
-                results = search(query, top_k=5)
-                t_search_end = time.time()
-                
-                # 2. Knowledge Graph Expansion
-                subgraph = get_subgraph(results, depth=1)
-                
-                # 3. Context & Prompt Building
-                context = build_context(results, subgraph)
-                
-                # 4. LLM Generation
-                answer, llm_latency, tokens = generate_answer(context, query)
-                
-                t1 = time.time()
-                
-                # 5. Store States
-                st.session_state["retrieval_results"] = results
-                st.session_state["search_time"] = round(t_search_end - t_search_start, 3)
-                st.session_state["retrieved_subgraph"] = subgraph
-                st.session_state["llm_answer"] = answer
-                st.session_state["llm_time"] = llm_latency
-                st.session_state["tokens_used"] = tokens
-                st.session_state["total_time"] = round(t1 - t0, 2)
-                st.session_state["last_query"] = query
-                
-                st.rerun()
+                with st.expander("📖 Quick Start Guide", expanded=False):
+                    st.markdown("""
+                    1. **Ask a Question**: Type your query below.
+                    2. **Review Evidence**: Check the Evidence panel.
+                    3. **Explore Connections**: Open the Knowledge Explorer to analyze the graph.
+                    """)
+                    
+                st.write("**Suggested Questions:**")
+                st.button("Summarize maintenance SOP", disabled=is_busy, on_click=set_query, args=("Summarize maintenance SOP",))
+                st.button("Emergency Shutdown Analysis", disabled=is_busy, on_click=set_query, args=("Emergency Shutdown Analysis",))
+            else:
+                for idx, turn in enumerate(st.session_state["investigation_history"]):
+                    is_last = (idx == len(st.session_state["investigation_history"]) - 1)
+                    
+                    with st.chat_message("user"):
+                        st.write(turn["query"])
+                        
+                    with st.chat_message("assistant"):
+                        st.caption(f"**Intent Detected:** {turn.get('intent', 'General')}")
+                        main_answer, followups, topics = extract_main_answer_and_extras(turn["answer"])
+                        st.write(main_answer)
+                        
+                        cols = st.columns(4)
+                        if turn.get("results") and len(turn["results"]) > 0:
+                            cols[0].caption("✅ Grounded")
+                        if turn.get("subgraph") and turn["subgraph"].number_of_edges() > 0:
+                            cols[1].caption("🔗 Graph Supported")
+                        if turn.get("general_ai_mode"):
+                            cols[2].caption("🌐 General AI Mode")
+                        else:
+                            cols[2].caption("🛡️ Strict KB Mode")
+                            
+                        cov = turn.get("coverage", "Unknown")
+                        color = "red" if cov == "Low" else "orange" if cov == "Medium" else "green"
+                        cols[3].markdown(f"<span style='color:{color}; font-size: 0.8rem;'>Coverage: {cov}</span>", unsafe_allow_html=True)
+                        
+                        if is_last:
+                            if followups or topics:
+                                st.divider()
+                            if followups:
+                                st.write("**Follow-up Questions:**")
+                                for q in followups:
+                                    if q: st.button(q, disabled=is_busy, key=f"fq_{q}", on_click=set_query, args=(q,))
+                            if topics:
+                                st.write("**Explore Related Topics:**")
+                                for t in topics:
+                                    if t: st.button(t, disabled=is_busy, key=f"rt_{t}", on_click=set_query, args=(t,))
+        
+        st.write("---") 
+        st.toggle("🌐 Enable General AI Mode (Hybrid KB + World Knowledge)", key="general_ai_mode", disabled=is_busy)
+        
+        if st.session_state.get("general_ai_mode", False):
+            st.caption("🟢 **Current Mode:** General AI (Using Knowledge Base + External Knowledge)")
+        else:
+            st.caption("🛡️ **Current Mode:** Strict Enterprise (Restricted to Knowledge Base Only)")
+            
+        st.markdown("<div id='nexus-chat-input-wrapper'></div>", unsafe_allow_html=True)
+        colA, colB = st.columns([6, 1], gap="small")
+        with colA:
+            st.text_input("Message NEXUS...", key="user_input", placeholder="Ask anything about your data...", label_visibility="collapsed", disabled=is_busy, on_change=submit_query)
+        with colB:
+            st.button("Send", use_container_width=True, disabled=is_busy, on_click=submit_query)

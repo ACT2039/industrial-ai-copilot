@@ -1,64 +1,58 @@
 """
-Status Bar Component
+Status Bar / Live Data Pipeline Component
 """
 import streamlit as st
 
 def render_status_bar():
     """
-    Renders a connected pipeline visualization at the bottom of the dashboard.
+    Renders the live data pipeline sequence using native Streamlit columns.
     """
-    pipeline_html = """
-    <div style="margin-top: 40px;">
-        <h4 style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Live Data Pipeline</h4>
+    # Determine current active steps based on session state
+    has_results = bool(st.session_state.get("retrieval_results"))
+    has_graph = st.session_state.get("retrieved_subgraph") is not None
+    has_llm = bool(st.session_state.get("llm_answer"))
+    
+    st.write("**Live Pipeline Status:**")
+    
+    with st.container(border=True):
+        cols = st.columns(5)
         
-        <div class="pipeline-container">
-            <div class="pipeline-line"></div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>Upload</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>Inventory</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>OCR</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>Chunking</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>Embeddings</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>FAISS</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>KG</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node"></div>
-                <span>Hybrid</span>
-            </div>
-            
-            <div class="pipeline-stage">
-                <div class="pipeline-node" style="box-shadow: 0 0 15px rgba(56, 189, 248, 0.8); border-color: #38bdf8; background: rgba(56,189,248,0.2);"></div>
-                <span style="color: #38bdf8; font-weight: 600;">Response</span>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(pipeline_html, unsafe_allow_html=True)
+        # Step 1: User Query (Always active if this renders)
+        with cols[0]:
+            st.write("👤 Query" if has_results else "👤 Waiting")
+            if has_results:
+                st.success("OK")
+            else:
+                st.info("...")
+                
+        # Step 2: Semantic Search
+        with cols[1]:
+            st.write("🔍 Search")
+            if has_results:
+                st.success("FAISS")
+            else:
+                st.info("...")
+                
+        # Step 3: Graph Expansion
+        with cols[2]:
+            st.write("🕸️ Graph")
+            if has_graph:
+                st.success("Expanded")
+            else:
+                st.info("...")
+                
+        # Step 4: Context Building
+        with cols[3]:
+            st.write("🏗️ Context")
+            if has_llm:
+                st.success("Built")
+            else:
+                st.info("...")
+                
+        # Step 5: LLM Generation
+        with cols[4]:
+            st.write("🤖 LLM")
+            if has_llm:
+                st.success("Complete")
+            else:
+                st.info("...")

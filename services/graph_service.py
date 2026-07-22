@@ -57,3 +57,55 @@ def get_graph_statistics(graph):
         "nodes": graph.number_of_nodes(),
         "edges": graph.number_of_edges()
     }
+
+def generate_semantic_label(node_id: str, node_data: dict, meta_df=None) -> str:
+    """
+    Generates a human-readable semantic label for any graph node, 
+    ensuring internal backend IDs (e.g., CHUNK025651) are NEVER exposed.
+    Priority: 1. Extracted Entity Name, 2. Document Title, 3. Chunk Summary.
+    """
+    nid = str(node_id).strip()
+    raw_type = node_data.get("type", "Entity Record")
+    lower_nid = nid.lower()
+    
+    # 1. Handle Chunks
+    if "chunk" in lower_nid or "chk" in lower_nid or raw_type == "Chunk":
+        # Try to resolve document title from metadata
+        if meta_df is not None:
+            matches = meta_df[meta_df["Chunk_ID"] == nid]
+            if not matches.empty:
+                doc_name = matches.iloc[0].get("File_Name", "General Record")
+                doc_name = str(doc_name).replace(".pdf", "").replace(".txt", "").replace(".csv", "")
+                if doc_name.lower() not in ["unknown", "unknown document", "nan", ""]:
+                    return doc_name
+                    
+        # Fallback to generating a Semantic Title from the text content
+        text = str(node_data.get("text", "")).strip()
+        if text and len(text) > 10:
+            words = text.split()
+            # Grab first 4 words to form a pseudo-title, capitalize them
+            title_words = [w.capitalize() for w in words[:4] if w.isalpha() or w.isalnum()]
+            if title_words:
+                return " ".join(title_words)
+                
+        return "Knowledge Segment"
+        
+    # 2. Handle Documents
+    if "doc" in lower_nid:
+        return "Source Document"
+        
+    # 3. Generic Entity cleanup
+    if "entity" in lower_nid:
+        return "Extracted Entity"
+        
+    # 4. Mask UUIDs or super long IDs
+    if len(nid) > 30:
+        return "System Entity"
+        
+    # 5. Business Concept / Extracted Entity
+    # Clean up standard entities by applying title case if they are entirely lowercase
+    if nid.islower():
+        return nid.title()
+        
+    return nid
+
