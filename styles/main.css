@@ -177,62 +177,59 @@ header[data-testid="stHeader"] {
 }
 
 /* 3. Make the NEXUS AI Workspace text container sticky */
+/* Using a robust background expansion to ensure no text bleeds through */
 div[data-testid="stElementContainer"]:has(#nexus-header) {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background-color: rgba(253, 251, 247, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding-top: 1.5rem;
-    padding-bottom: 0.5rem;
+    background-color: rgba(253, 251, 247, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding-top: 2rem;
+    padding-bottom: 1rem;
     margin-top: 0rem;
-    height: 4.5rem; /* Explicit height to align the tabs perfectly below it */
+    margin-bottom: 0rem;
+    width: 100%;
+    /* Extend the background downwards to overlap the tabs seamlessly */
+    box-shadow: 0 10px 0 0 rgba(253, 251, 247, 0.98);
 }
 
 /* 4. Make the Tabs row sticky immediately below the workspace title */
 div[data-baseweb="tab-list"] {
     position: sticky;
-    top: 4.5rem; /* Exactly below the 4.5rem header */
+    top: 4.5rem; /* Exactly below the header */
     z-index: 999;
-    background-color: rgba(253, 251, 247, 0.95) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background-color: rgba(253, 251, 247, 0.98) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     padding-bottom: 0.5rem;
     padding-top: 0.5rem;
     border-bottom: 1px solid rgba(216, 140, 81, 0.3) !important;
     margin-bottom: 1rem;
+    width: 100%;
 }
 
 /* ==============================================================================
    OBJECTIVE 2: Professional Bottom Chat Composer Fade
    ============================================================================== */
-/* 5. Floating Bottom Composer Fade */
-/* Streamlit natively wraps the chat input in stBottomBlockContainer */
+/* 5. Floating Bottom Composer - Tight boundary blur */
+/* Remove any large background or gradient from the container */
 div[data-testid="stBottomBlockContainer"] {
     background: transparent !important;
-    padding-bottom: 2rem !important; /* Lift the input slightly for floating effect */
+    padding-bottom: 2rem !important; 
     position: relative;
 }
 
-/* Create the gradient fade over the background */
-div[data-testid="stBottomBlockContainer"]::before {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 160px; /* Covers the input + space above it */
-    background: linear-gradient(to top, rgba(253, 251, 247, 1) 30%, rgba(253, 251, 247, 0.8) 60%, rgba(253, 251, 247, 0) 100%);
-    pointer-events: none; /* Allow clicking through the fade */
-    z-index: -1;
+/* Apply a tightly contoured box-shadow blur directly around the shape of the chat input */
+div[data-testid="stChatInput"] {
+    background: transparent !important;
+    border-radius: 26px; /* Match the curved shape of the input */
+    /* Create a dense background-colored blur only around the exact shape of the search bar */
+    box-shadow: 0 0 25px 20px rgba(253, 251, 247, 0.95), 0 0 40px 30px rgba(253, 251, 247, 0.8) !important;
+    position: relative;
+    z-index: 10;
 }
 
-/* Add subtle backdrop blur if supported */
-@supports (backdrop-filter: blur(4px)) {
-    div[data-testid="stBottomBlockContainer"]::before {
-        backdrop-filter: blur(3px);
-        -webkit-backdrop-filter: blur(3px);
-        background: linear-gradient(to top, rgba(253, 251, 247, 0.95) 30%, rgba(253, 251, 247, 0.7) 60%, rgba(253, 251, 247, 0) 100%);
-    }
+div[data-testid="stBottomBlockContainer"]::before {
+    display: none !important; /* Disable the old giant gradient fade */
 }
