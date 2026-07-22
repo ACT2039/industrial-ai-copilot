@@ -6,8 +6,11 @@ import os
 import time
 
 # Must be the first Streamlit command
+# Deployment Marker
+APP_VERSION = "Build 2026-07-22 18:30"
+
 st.set_page_config(
-    page_title="NEXUS AI",
+    page_title="NEXUS AI Enterprise Copilot",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -112,6 +115,10 @@ def main():
     
     # Render UI
     sidebar.render_sidebar()
+    
+    # Display deployment marker at the bottom of the sidebar
+    st.sidebar.markdown(f"<div style='text-align: center; color: #888; font-size: 0.8rem; margin-top: 20px;'>{APP_VERSION}</div>", unsafe_allow_html=True)
+    
     header.render_header()
     home.render_home()
 
