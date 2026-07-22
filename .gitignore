@@ -1,9 +1,11 @@
 # ==============================================================================
 # Enterprise AI Project .gitignore
-# Frameworks: Python, Jupyter, PyTorch, FAISS, LangChain, React
+# Streamlit + GraphRAG + FAISS + SentenceTransformers
 # ==============================================================================
 
-# 1. Environment Variables & Secrets
+# ==============================================================================
+# Environment Variables & Secrets
+# ==============================================================================
 .env
 .env.*
 !.env.template
@@ -11,15 +13,23 @@
 secrets/
 credentials/
 
-# 2. Python & Virtual Environments
+# ==============================================================================
+# Python & Virtual Environments
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+venv/
+.venv/
+ENV/
 env/
+env.bak/
+venv.bak/
+
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
@@ -31,32 +41,36 @@ sdist/
 var/
 wheels/
 share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-venv/
-.venv/
-ENV/
-env.bak/
-venv.bak/
 
-# 3. Jupyter Notebook & Colab
+*.egg-info/
+*.egg
+.installed.cfg
+
+# ==============================================================================
+# Jupyter / Google Colab
+# ==============================================================================
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 .colab/
 
-# 4. VS Code & IDEs
+# ==============================================================================
+# IDEs
+# ==============================================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# 5. Operating System Files
+# ==============================================================================
+# Operating System Files
+# ==============================================================================
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# 6. Logs & Caches
+# ==============================================================================
+# Logs & Cache
+# ==============================================================================
 logs/
 *.log
 npm-debug.log*
@@ -66,30 +80,79 @@ yarn-error.log*
 .coverage
 htmlcov/
 
-# 7. Frontend (React/Node)
+# ==============================================================================
+# Frontend
+# ==============================================================================
 frontend/node_modules/
-frontend/dist/
 frontend/build/
+frontend/dist/
 .npm/
 
-# 8. Data & Temporary Files
-data/processed/*
-!data/processed/.gitkeep
-data/archive/*
-!data/archive/.gitkeep
+# ==============================================================================
+# Temporary Files
+# ==============================================================================
 tmp/
 temp/
 
-# 9. AI, ML, & Vector DB Artifacts
-# Do not commit raw embeddings, models, or vector stores
-data/chunks/*
-!data/chunks/.gitkeep
+# ==============================================================================
+# Data Folders
+# ==============================================================================
+
+# Processed Data
+data/processed/*
+!data/processed/.gitkeep
+
+# Raw Data
+data/raw/*
+!data/raw/.gitkeep
+
+# Archive
+data/archive/*
+!data/archive/.gitkeep
+
+# Embeddings
 data/embeddings/*
 !data/embeddings/.gitkeep
+
+# Inventory
+data/inventory/*
+!data/inventory/.gitkeep
+
+# OCR
+data/ocr/*
+!data/ocr/.gitkeep
+
+# RAG Outputs
+data/rag/*
+!data/rag/.gitkeep
+
+# Backup & Staging (Generated Automatically)
+data/backups/
+data/staging/
+
+# ==============================================================================
+# Runtime Assets (REQUIRED FOR DEPLOYMENT)
+# ==============================================================================
+
+# Chunks
+data/chunks/*
+!data/chunks/.gitkeep
+!data/chunks/chunks.parquet
+
+# Vector Database
 data/vector_db/*
 !data/vector_db/.gitkeep
+!data/vector_db/faiss.index
+!data/vector_db/faiss_metadata.parquet
+
+# Knowledge Graph
 data/knowledge_graph/*
 !data/knowledge_graph/.gitkeep
+!data/knowledge_graph/knowledge_graph.gpickle
+
+# ==============================================================================
+# Large ML Models (Do Not Commit)
+# ==============================================================================
 *.faiss
 *.pkl
 *.pt
@@ -97,22 +160,9 @@ data/knowledge_graph/*
 *.h5
 *.onnx
 models/
-data/raw/*
-!data/raw/.gitkeep
 
-# Backup snapshots
-data/backups/
-
-# Notebook Outputs
-data/inventory/*
-!data/inventory/.gitkeep
-
-data/ocr/*
-!data/ocr/.gitkeep
-
-data/rag/*
-!data/rag/.gitkeep
-
-# Python bytecode
+# ==============================================================================
+# Python Bytecode
+# ==============================================================================
 *.pyo
 *.pyd
