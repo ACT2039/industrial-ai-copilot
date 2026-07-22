@@ -211,11 +211,6 @@ streamlit run app.py
 
 > **Streamlit:** *https://industrial-ai-copilot-eev59jhrmun9niwltdx88h.streamlit.app*
 
-Example:
-
-```
-https://industrial-ai-copilot-eev59jhrmun9niwltdx88h.streamlit.app/
-```
 
 ---
 
@@ -229,14 +224,39 @@ https://github.com/ACT2039/industrial-ai-copilot
 
 # 📸 Screenshots
 
-Add screenshots of:
+## Enterprise Copilot Dashboard
 
-- Dashboard
-- Enterprise Copilot
-- Evidence Explorer
-- Explainability
-- Knowledge Graph
-- Analytics Dashboard
+![Enterprise Copilot Dashboard](images/dashboard.png)
+
+---
+
+## Knowledge Graph
+
+![Knowledge Graph](images/enterprise_graph_dashboard.png)
+
+---
+
+## Evidence Explorer
+
+![Evidence Explorer](images/evidence.png)
+
+---
+
+## Analytics Dashboard
+
+![Analytics Dashboard](images/analytics.png)
+
+---
+
+## Source Traceability Diagram
+
+![Source Traceability Diagram](images/confidence_ai.png)
+
+---
+
+## Knowledge Base Management Dashboard
+
+![Knowledge Base Management Dashboard](images/knowledge_base_management.png)
 
 ---
 
