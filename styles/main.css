@@ -194,26 +194,31 @@ div[data-testid="stElementContainer"]:has(#nexus-header) {
 }
 
 /* 4. Make the Tabs row sticky */
-/* IMPORTANT: Streamlit's stTabs container natively uses overflow: hidden which breaks position: sticky. 
-   We must override it to visible for the sticky behavior to escape the container and stick to the viewport. */
+/* IMPORTANT: Streamlit's stTabs container natively uses overflow: hidden and sometimes containment/transforms which breaks position: sticky. 
+   We must override these to allow the sticky behavior to escape the container and stick to the viewport. */
 div[data-testid="stTabs"],
 div[data-testid="stTabs"] > div,
-div[data-testid="stTabs"] > div > div {
+div[data-testid="stTabs"] > div > div,
+div[data-testid="stTabs"] > div > div > div {
     overflow: visible !important;
+    contain: none !important;
+    transform: none !important;
 }
 
-div[data-baseweb="tab-list"] {
-    position: sticky;
-    top: 90px; /* Exactly below the 90px header to prevent sliding under it */
-    z-index: 999;
+div[data-baseweb="tab-list"],
+div[role="tablist"] {
+    position: sticky !important;
+    position: -webkit-sticky !important;
+    top: 90px !important; /* Exactly below the 90px header to prevent sliding under it */
+    z-index: 9999 !important;
     background-color: rgba(253, 251, 247, 0.98) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    padding-bottom: 0.5rem;
-    padding-top: 0.5rem;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    padding-bottom: 0.5rem !important;
+    padding-top: 0.5rem !important;
     border-bottom: 1px solid rgba(216, 140, 81, 0.3) !important;
-    margin-bottom: 1rem;
-    width: 100%;
+    margin-bottom: 1rem !important;
+    width: 100% !important;
 }
 
 /* ==============================================================================
