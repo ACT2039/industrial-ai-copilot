@@ -12,6 +12,7 @@ from services.investigation_service import (
     get_investigations, search_investigations, create_investigation,
     delete_investigation, update_investigation, get_messages
 )
+from components.header import clear_session
 
 def start_new_investigation():
     """Resets the UI to an empty state for a new investigation."""
@@ -44,6 +45,11 @@ def restore_investigation(inv_id):
         except:
             subgraph = None
             
+        try:
+            metrics_data = json.loads(msg["metrics_json"]) if msg.get("metrics_json") else {}
+        except:
+            metrics_data = {}
+            
         history.append({
             "query": msg["query"],
             "intent": msg["query_intent"],
@@ -51,7 +57,8 @@ def restore_investigation(inv_id):
             "results": results,
             "subgraph": subgraph,
             "coverage": msg["coverage"],
-            "coverage_reason": msg["coverage_reason"]
+            "coverage_reason": msg["coverage_reason"],
+            "pipeline_metrics": metrics_data
         })
         
     st.session_state["investigation_history"] = history
@@ -64,6 +71,7 @@ def restore_investigation(inv_id):
     st.session_state["query_intent"] = latest["intent"]
     st.session_state["coverage"] = latest["coverage"]
     st.session_state["coverage_reason"] = latest["coverage_reason"]
+    st.session_state["pipeline_metrics"] = latest.get("pipeline_metrics", {})
     
 def export_investigation(inv_id, title, ext="md"):
     """Generates an export payload for the investigation."""
@@ -116,6 +124,7 @@ def render_sidebar():
         st.caption("Enterprise Knowledge Intelligence Platform")
         
         st.button("➕ New Investigation", use_container_width=True, type="primary", on_click=start_new_investigation)
+        st.button("🧹 Clear Session", use_container_width=True, on_click=clear_session)
         
         search_query = st.text_input("Search History...", placeholder="Filter by title or keyword...", label_visibility="collapsed")
         

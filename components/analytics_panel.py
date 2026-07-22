@@ -7,39 +7,56 @@ def render_analytics_panel():
     """
     Renders professional 10-point KPI array dynamically populated from backend states.
     """
-    # Fetch live stats from session state
-    results = st.session_state.get("retrieval_results", [])
-    search_time = st.session_state.get("search_time", 0.0)
-    graph_time = st.session_state.get("graph_time", 0.0)
-    subgraph = st.session_state.get("retrieved_subgraph", None)
-    llm_time = st.session_state.get("llm_time", 0.0)
-    total_time = st.session_state.get("total_time", 0.0)
-    tokens_used = st.session_state.get("tokens_used", 0)
-    overall_conf = st.session_state.get("overall_confidence", 0.0)
+    metrics = st.session_state.get("pipeline_metrics", {})
     
-    retrieved_chunks = len(results)
-    docs_referenced = len(set([res.get("Document_Name", "Unknown") for res in results]))
+    pipeline_time = metrics.get("pipeline_time", 0.0)
+    retrieval_time = metrics.get("retrieval_time", 0.0)
+    graph_time = metrics.get("graph_time", 0.0)
+    prompt_time = metrics.get("prompt_time", 0.0)
+    llm_time = metrics.get("llm_time", 0.0)
     
-    if subgraph is not None:
-        nodes_retrieved = subgraph.number_of_nodes()
-        edges_traversed = subgraph.number_of_edges()
-    else:
-        nodes_retrieved = 0
-        edges_traversed = 0
+    prompt_tokens = metrics.get("prompt_tokens", 0)
+    comp_tokens = metrics.get("completion_tokens", 0)
+    total_tokens = metrics.get("total_tokens", 0)
+    
+    retrieved_chunks = metrics.get("retrieved_chunks", 0)
+    docs_referenced = metrics.get("retrieved_documents", 0)
+    nodes_retrieved = metrics.get("graph_nodes", 0)
+    edges_traversed = metrics.get("graph_edges", 0)
+    
+    context_length = metrics.get("context_length", 0)
+    prompt_length = metrics.get("prompt_length", 0)
+    overall_conf = metrics.get("confidence", "Unknown")
+    model_name = metrics.get("model_name", "None")
+    finish_reason = metrics.get("finish_reason", "None")
         
     st.subheader("System Metrics", anchor=False)
     
     with st.container(border=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric(label="Pipeline Time", value=f"{total_time}s")
-            st.metric(label="Graph Expansion Time", value=f"{graph_time}s")
-            st.metric(label="Tokens Used", value=f"{tokens_used:,}")
-            st.metric(label="Retrieved Chunks", value=f"{retrieved_chunks}")
-            st.metric(label="Relationships Traversed", value=f"{edges_traversed:,}")
-        with col2:
-            st.metric(label="Retrieval Time", value=f"{search_time}s")
-            st.metric(label="LLM Time", value=f"{llm_time}s")
-            st.metric(label="Overall Confidence", value=f"{int(overall_conf * 100)}%")
-            st.metric(label="Retrieved Documents", value=f"{docs_referenced}")
-            st.metric(label="Graph Nodes", value=f"{nodes_retrieved:,}")
+        st.markdown("**⏱️ Latency & Execution**")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Pipeline Time", f"{pipeline_time}s")
+        c2.metric("Retrieval Time", f"{retrieval_time}s")
+        c3.metric("Graph Time", f"{graph_time}s")
+        c4.metric("LLM Response Time", f"{llm_time}s")
+        
+        st.markdown("**🧠 Token Usage & LLM**")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Prompt Tokens", f"{prompt_tokens:,}")
+        c2.metric("Completion Tokens", f"{comp_tokens:,}")
+        c3.metric("Total Tokens", f"{total_tokens:,}")
+        c4.metric("Model", model_name.split("/")[-1])
+        
+        st.markdown("**📚 Context & Grounding**")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Retrieved Chunks", f"{retrieved_chunks}")
+        c2.metric("Retrieved Documents", f"{docs_referenced}")
+        c3.metric("Context Length (chars)", f"{context_length:,}")
+        c4.metric("Confidence", overall_conf)
+        
+        st.markdown("**🕸️ Knowledge Graph**")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Graph Nodes", f"{nodes_retrieved:,}")
+        c2.metric("Edges Traversed", f"{edges_traversed:,}")
+        c3.metric("Prompt Length (chars)", f"{prompt_length:,}")
+        c4.metric("Finish Reason", finish_reason)

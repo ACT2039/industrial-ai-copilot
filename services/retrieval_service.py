@@ -117,6 +117,16 @@ def search(query: str, top_k: int = 5) -> list:
                 "Chunk_Text": chunk_text
             })
 
+        import datetime
+        try:
+            with open("data/deployment_debug.log", "a", encoding="utf-8") as f:
+                f.write(f"\\n--- [RETRIEVAL DIAGNOSTICS] {datetime.datetime.now()} ---\\n")
+                f.write(f"Number of retrieved chunks: {len(results)}\\n")
+                for r in results:
+                    f.write(f"ID: {r['Chunk_ID']}, Doc: {r['Document_Name']}, Page: {r['Page_Number']}, Score: {r['Score']}, Len: {len(r['Chunk_Text'])}\\n")
+        except Exception:
+            pass
+
         return results
     except Exception as e:
         st.error(f"Search failed: {str(e)}")

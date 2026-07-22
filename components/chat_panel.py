@@ -60,9 +60,10 @@ def execute_pipeline(query: str):
             status.update(label="Confidence Gate Triggered...", state="running")
             answer = "⚠️ **Confidence Gate Triggered**\n\nThe current knowledge base does not contain enough verified information to answer confidently.\n\n*Suggestions:*\n- Upload additional documents (e.g., Maintenance SOP, Repair Manual).\n- Enable **General AI Mode** below to allow external knowledge."
             llm_latency, tokens, intent = 0.0, 0, "Blocked"
+            llm_metadata = {}
         else:
             status.update(label="Generating AI Response...", state="running")
-            answer, llm_latency, tokens, intent = generate_answer(context, query, is_general_ai, memory_context)
+            answer, llm_latency, tokens, intent, llm_metadata = generate_answer(context, query, is_general_ai, memory_context)
             if coverage == "Medium" and not is_general_ai:
                 answer = "⚠️ *Warning: Limited supporting evidence in the knowledge base.* \n\n" + answer
         
@@ -76,16 +77,31 @@ def execute_pipeline(query: str):
             
         inv_id = st.session_state["current_investigation_id"]
         
+        # Build comprehensive pipeline_metrics object
+        pipeline_metrics = {
+            "pipeline_time": round(t1 - t0, 2),
+            "retrieval_time": round(t_search_end - t_search_start, 3),
+            "graph_time": round(t_graph_end - t_graph_start, 3),
+            "llm_time": llm_latency,
+            "prompt_time": 0.0, # Negligible locally
+            "prompt_tokens": llm_metadata.get("prompt_tokens", 0) if 'llm_metadata' in locals() else 0,
+            "completion_tokens": llm_metadata.get("completion_tokens", 0) if 'llm_metadata' in locals() else 0,
+            "total_tokens": tokens,
+            "retrieved_chunks": len(results) if results else 0,
+            "retrieved_documents": len(set([r.get("Document_Name", "Unknown") for r in results])) if results else 0,
+            "graph_nodes": subgraph.number_of_nodes() if subgraph else 0,
+            "graph_edges": subgraph.number_of_edges() if subgraph else 0,
+            "context_length": llm_metadata.get("context_length", 0) if 'llm_metadata' in locals() else 0,
+            "prompt_length": llm_metadata.get("prompt_length", 0) if 'llm_metadata' in locals() else 0,
+            "confidence": coverage,
+            "finish_reason": llm_metadata.get("finish_reason", "Unknown") if 'llm_metadata' in locals() else "Unknown",
+            "model_name": llm_metadata.get("model_name", "google/gemini-2.5-flash") if 'llm_metadata' in locals() else "google/gemini-2.5-flash"
+        }
+        
         # Save to SQLite
         results_json = json.dumps(results) if results else "[]"
         subgraph_json = json.dumps(nx.node_link_data(subgraph)) if subgraph else "{}"
-        metrics_json = json.dumps({
-            "search_time": round(t_search_end - t_search_start, 3),
-            "graph_time": round(t_graph_end - t_graph_start, 3),
-            "llm_time": llm_latency,
-            "tokens_used": tokens,
-            "total_time": round(t1 - t0, 2)
-        })
+        metrics_json = json.dumps(pipeline_metrics)
         
         add_message(inv_id, query, intent, answer, results_json, subgraph_json, metrics_json, coverage, coverage_reason)
         
@@ -98,10 +114,12 @@ def execute_pipeline(query: str):
             "subgraph": subgraph,
             "coverage": coverage,
             "coverage_reason": coverage_reason,
-            "general_ai_mode": is_general_ai
+            "general_ai_mode": is_general_ai,
+            "pipeline_metrics": pipeline_metrics
         })
         
         # Update top-level legacy states for other panels
+        st.session_state["pipeline_metrics"] = pipeline_metrics
         st.session_state["retrieval_results"] = results
         st.session_state["retrieved_subgraph"] = subgraph
         st.session_state["llm_answer"] = answer
@@ -129,6 +147,18 @@ def extract_main_answer_and_extras(full_answer: str):
         if len(rest) == 2:
             topics_raw = rest[1].strip()
             topics = [line.strip("- *").strip() for line in topics_raw.split("\n") if line.strip()]
+
+    # DIAGNOSTICS LOGGING
+    import datetime
+    try:
+        with open("data/deployment_debug.log", "a", encoding="utf-8") as f:
+            f.write(f"\\n--- [RENDERING DIAGNOSTICS] {datetime.datetime.now()} ---\\n")
+            f.write(f"Raw Markdown Returned:\\n{full_answer}\\n")
+            f.write(f"Parsed Main Body:\\n{main_body}\\n")
+            f.write(f"Parsed Follow-ups: {followups}\\n")
+            f.write(f"Parsed Topics: {topics}\\n")
+    except Exception:
+        pass
             
     return main_body, followups, topics
 
@@ -266,9 +296,9 @@ def render_chat_panel():
         else:
             st.caption("🛡️ **Current Mode:** Strict Enterprise (Restricted to Knowledge Base Only)")
             
-        st.markdown("<div id='nexus-chat-input-wrapper'></div>", unsafe_allow_html=True)
-        colA, colB = st.columns([6, 1], gap="small")
-        with colA:
-            st.text_input("Message NEXUS...", key="user_input", placeholder="Ask anything about your data...", label_visibility="collapsed", disabled=is_busy, on_change=submit_query)
-        with colB:
-            st.button("Send", use_container_width=True, disabled=is_busy, on_click=submit_query)
+    # Natively sticky chat input at the bottom of the scrollable main layout
+    if prompt := st.chat_input("Message NEXUS...", key="user_input_chat", disabled=is_busy):
+        # We manually process it since the user pressed enter
+        set_query(prompt)
+        execute_pipeline(prompt)
+        st.rerun()

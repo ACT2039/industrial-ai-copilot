@@ -127,7 +127,12 @@ def generate_answer(context: str, question: str, is_general_ai: bool = False, co
     intent = classify_intent(question)
     
     if not api_key or api_key == "dummy_key":
-        return ("⚠ **Configuration Error:** OpenRouter API key is missing or invalid. Please check your `.env` file.", 0.0, 0, intent)
+        empty_meta = {
+            "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0,
+            "finish_reason": "Dummy Key", "model_name": "Unknown",
+            "prompt_length": 0, "context_length": len(context)
+        }
+        return ("⚠ **Configuration Error:** OpenRouter API key is missing or invalid. Please check your `.env` file.", 0.0, 0, intent, empty_meta)
         
     prompt_text = build_prompt(context, question, intent, is_general_ai, conversation_history)
     
@@ -153,12 +158,53 @@ def generate_answer(context: str, question: str, is_general_ai: bool = False, co
         latency = round(end_time - start_time, 2)
         
         answer = response.choices[0].message.content
-        tokens = response.usage.total_tokens if response.usage else 0
+        finish_reason = response.choices[0].finish_reason if response.choices else "Unknown"
         
-        return (answer, latency, tokens, intent)
+        usage = response.usage
+        prompt_tokens = usage.prompt_tokens if usage else 0
+        comp_tokens = usage.completion_tokens if usage else 0
+        total_tokens = usage.total_tokens if usage else 0
+
+        llm_metadata = {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": comp_tokens,
+            "total_tokens": total_tokens,
+            "finish_reason": finish_reason,
+            "model_name": "google/gemini-2.5-flash",
+            "prompt_length": len(prompt_text),
+            "context_length": len(context)
+        }
+        
+        # DIAGNOSTICS LOGGING
+        import datetime
+        try:
+            with open("data/deployment_debug.log", "a", encoding="utf-8") as f:
+                f.write(f"\\n--- [LLM DIAGNOSTICS] {datetime.datetime.now()} ---\\n")
+                f.write(f"Context Length: {len(context)}\\n")
+                f.write(f"Context First 500: {context[:500]}\\n")
+                f.write(f"Context Last 500: {context[-500:]}\\n")
+                f.write(f"Prompt Length: {len(prompt_text)}\\n")
+                f.write(f"Prompt Sent: {prompt_text}\\n")
+                f.write(f"Model Name: google/gemini-2.5-flash\\n")
+                f.write(f"Raw Response: {answer}\\n")
+                f.write(f"Finish Reason: {finish_reason}\\n")
+                f.write(f"Prompt Tokens: {prompt_tokens}\\n")
+                f.write(f"Completion Tokens: {comp_tokens}\\n")
+                f.write(f"Total Tokens: {total_tokens}\\n")
+                f.write(f"Latency: {latency}s\\n")
+        except Exception:
+            pass
+        
+        return (answer, latency, total_tokens, intent, llm_metadata)
         
     except Exception as e:
-        return (f"⚠ **API Error:** Failed to generate response from OpenRouter.\n\nDetails: {str(e)}", 0.0, 0, intent)
+        empty_meta = {
+            "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0,
+            "finish_reason": "Error", "model_name": "Unknown",
+            "prompt_length": len(prompt_text) if 'prompt_text' in locals() else 0,
+            "context_length": len(context)
+        }
+        return (f"⚠ **API Error:** Failed to generate response from OpenRouter.\n\nDetails: {str(e)}", 0.0, 0, intent, empty_meta)
 
 def generate_smart_title(query: str) -> str:
     """Generates a short, professional title for a new investigation based on the first query."""
