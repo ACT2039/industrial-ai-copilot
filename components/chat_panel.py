@@ -75,7 +75,7 @@ def execute_pipeline(query: str):
             title = generate_smart_title(query)
             st.session_state["current_investigation_id"] = create_investigation(title)
             
-        inv_id = st.session_state["current_investigation_id"]
+        inv_id = st.session_state.get("current_investigation_id")
         
         # Build comprehensive pipeline_metrics object
         pipeline_metrics = {
@@ -170,7 +170,7 @@ def submit_query():
     if query.strip():
         execute_pipeline(query)
 
-def render_chat_panel():
+def render_chat_history():
     if "investigation_history" not in st.session_state:
         st.session_state["investigation_history"] = []
     if "current_investigation_id" not in st.session_state:
@@ -186,7 +186,7 @@ def render_chat_panel():
     with st.container(border=True):
         st.markdown("""
         <div id='main-chat-container-marker' style='display:none;'></div>
-        <img src="empty.gif" onerror="
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" onload="
             setTimeout(() => {
                 const marker = document.getElementById('main-chat-container-marker');
                 if (marker) {
@@ -214,24 +214,24 @@ def render_chat_panel():
         </div>
         """, unsafe_allow_html=True)
         
-        is_busy = st.session_state["is_processing"]
+        is_busy = st.session_state.get("is_processing", False)
         
         if is_busy:
             st.markdown("""
             <style>
-            @keyframes pageBreathing {
-                0% { opacity: 1; filter: brightness(1); }
-                50% { opacity: 0.85; filter: brightness(0.85); }
-                100% { opacity: 1; filter: brightness(1); }
+            @keyframes containerBreathing {
+                0% { box-shadow: 0 0 0 0 rgba(216, 140, 81, 0.4); }
+                70% { box-shadow: 0 0 0 10px rgba(216, 140, 81, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(216, 140, 81, 0); }
             }
-            .stApp {
-                animation: pageBreathing 4s infinite ease-in-out !important;
+            .copilot-premium {
+                animation: containerBreathing 2s infinite !important;
             }
             </style>
             """, unsafe_allow_html=True)
         
         with st.container(border=False):
-            if not st.session_state["investigation_history"]:
+            if not st.session_state.get("investigation_history", []):
                 st.markdown("""
                 <div style='text-align: center; margin-top: 50px; color: #75553B;'>
                     <hr style='width: 50%; margin: 0 auto 20px auto; border-color: rgba(216, 140, 81, 0.3);'>
@@ -248,11 +248,11 @@ def render_chat_panel():
                     """)
                     
                 st.write("**Suggested Questions:**")
-                st.button("Summarize maintenance SOP", disabled=is_busy, on_click=set_query, args=("Summarize maintenance SOP",))
-                st.button("Emergency Shutdown Analysis", disabled=is_busy, on_click=set_query, args=("Emergency Shutdown Analysis",))
+                st.button("Summarize maintenance SOP", key="suggest_1_btn", disabled=is_busy, on_click=set_query, args=("Summarize maintenance SOP",))
+                st.button("Emergency Shutdown Analysis", key="suggest_2_btn", disabled=is_busy, on_click=set_query, args=("Emergency Shutdown Analysis",))
             else:
-                for idx, turn in enumerate(st.session_state["investigation_history"]):
-                    is_last = (idx == len(st.session_state["investigation_history"]) - 1)
+                for idx, turn in enumerate(st.session_state.get("investigation_history", [])):
+                    is_last = (idx == len(st.session_state.get("investigation_history", [])) - 1)
                     
                     with st.chat_message("user"):
                         st.write(turn["query"])
@@ -296,7 +296,9 @@ def render_chat_panel():
         else:
             st.caption("🛡️ **Current Mode:** Strict Enterprise (Restricted to Knowledge Base Only)")
             
-    # Natively sticky chat input at the bottom of the scrollable main layout
+def render_chat_input():
+    is_busy = st.session_state.get("is_processing", False)
+    # Natively sticky chat input at the bottom of the main viewport (outside tabs)
     if prompt := st.chat_input("Message NEXUS...", key="user_input_chat", disabled=is_busy):
         # We manually process it since the user pressed enter
         set_query(prompt)

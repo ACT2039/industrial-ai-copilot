@@ -144,22 +144,29 @@ def generate_answer(context: str, question: str, is_general_ai: bool = False, co
         
         start_time = time.time()
         
-        response = client.chat.completions.create(
-            model="google/gemini-2.5-flash",
-            messages=[
-                {"role": "user", "content": prompt_text}
-            ],
-            temperature=0.0,
-            max_tokens=2048,
-            timeout=45.0
-        )
-        
-        end_time = time.time()
-        latency = round(end_time - start_time, 2)
-        
-        answer = response.choices[0].message.content
-        finish_reason = response.choices[0].finish_reason if response.choices else "Unknown"
-        
+        max_retries = 2
+        for attempt in range(max_retries):
+            response = client.chat.completions.create(
+                model="google/gemini-2.5-flash",
+                messages=[
+                    {"role": "user", "content": prompt_text}
+                ],
+                temperature=0.1,  # Increased from 0.0 to prevent deterministic safety loops
+                max_tokens=4096,
+                timeout=45.0
+            )
+            
+            end_time = time.time()
+            latency = round(end_time - start_time, 2)
+            
+            answer = response.choices[0].message.content if response.choices else ""
+            finish_reason = response.choices[0].finish_reason if response.choices else "Unknown"
+            
+            if finish_reason != "error" and len(answer) > 100:
+                break
+            
+            time.sleep(1.0) # Small backoff before retry
+            
         usage = response.usage
         prompt_tokens = usage.prompt_tokens if usage else 0
         comp_tokens = usage.completion_tokens if usage else 0

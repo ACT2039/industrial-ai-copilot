@@ -123,10 +123,10 @@ def render_sidebar():
         st.title("NEXUS AI")
         st.caption("Enterprise Knowledge Intelligence Platform")
         
-        st.button("➕ New Investigation", use_container_width=True, type="primary", on_click=start_new_investigation)
-        st.button("🧹 Clear Session", use_container_width=True, on_click=clear_session)
+        st.button("➕ New Investigation", key="new_investigation_btn", use_container_width=True, type="primary", on_click=start_new_investigation)
+        st.button("🧹 Clear Session", key="clear_session_btn", use_container_width=True, on_click=clear_session)
         
-        search_query = st.text_input("Search History...", placeholder="Filter by title or keyword...", label_visibility="collapsed")
+        search_query = st.text_input("Search History...", key="search_history_input", placeholder="Filter by title or keyword...", label_visibility="collapsed")
         
         st.divider()
         st.write("### Investigation History")
