@@ -167,8 +167,15 @@ div[data-baseweb="input"] {
    OBJECTIVE 1: Enterprise Sticky Header (Unified)
    ============================================================================== */
 /* 1. Hide the native top header completely so we can stick to top: 0 */
+/* DO NOT USE display: none, it hides the sidebar toggle! */
 header[data-testid="stHeader"] {
-    display: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    z-index: 1001 !important; /* Keep the sidebar toggle above custom header */
+}
+header[data-testid="stHeader"]::before,
+header[data-testid="stHeader"] > div {
+    background: transparent !important;
 }
 
 /* 2. Remove default top padding from the main block so it sits flush */
@@ -203,10 +210,13 @@ div[data-testid="stTabs"] > div > div > div {
     overflow: visible !important;
     contain: none !important;
     transform: none !important;
+    clip-path: none !important;
 }
 
+/* Foolproof selector for the tab list container in all Streamlit versions */
 div[data-baseweb="tab-list"],
-div[role="tablist"] {
+div[role="tablist"],
+div[data-testid="stTabs"] > div > div:first-child {
     position: sticky !important;
     position: -webkit-sticky !important;
     top: 90px !important; /* Exactly below the 90px header to prevent sliding under it */
