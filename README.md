@@ -103,36 +103,8 @@ Live pipeline metrics including:
 
 ---
 
-# 🏗️ System Architecture
-
-```
-                User
-                  │
-                  ▼
-        Streamlit Enterprise UI
-                  │
-                  ▼
-         Query Processing Layer
-                  │
-                  ▼
-       FAISS Vector Retrieval
-                  │
-                  ▼
-     Knowledge Graph Expansion
-                  │
-                  ▼
-        Context Construction
-                  │
-                  ▼
-          OpenRouter LLM
-                  │
-                  ▼
-      Structured AI Response
-                  │
-      ┌───────────┼───────────┐
-      ▼           ▼           ▼
-  Evidence    Explainability  Analytics
-```
+# 🏗️ System Architecture Diagram
+  ![System Architecture Diagram](arch_diagram.png)
 
 ---
 
